@@ -22,6 +22,7 @@ jobs:
           sudo apt-get install -y autoconf automake autopoint autotools-dev bison build-essential \
             curl default-jdk flex gawk gettext gperf libcurl4-openssl-dev libtool lsb-release lzip meson nasm \
             ninja-build pkg-config python3 swig unzip uuid-dev xz-utils zip zlib1g-dev
+          sudo npm install -g @webos-tools/cli@3.2.6   # ares-package, for make ipk
 
       - name: Toolchain (buildroot-nc4)
         run: |
