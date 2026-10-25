@@ -1,0 +1,53 @@
+# Test build of Kodi for webOS, following docs/README.webOS.md. Not for upstream.
+name: webOS test build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [webos-test-build]
+
+jobs:
+  ipk:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 360
+    steps:
+      - name: Free disk space
+        run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+
+      - uses: actions/checkout@v4
+
+      - name: Build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y autoconf automake autopoint autotools-dev bison build-essential \
+            curl default-jre flex gawk gettext gperf libtool lsb-release lzip meson nasm \
+            ninja-build pkg-config python3 swig unzip uuid-dev xz-utils zip zlib1g-dev
+
+      - name: Toolchain (buildroot-nc4)
+        run: |
+          mkdir -p "$HOME/kodi-dev"
+          curl -fL https://github.com/openlgtv/buildroot-nc4/releases/download/2026.08-webos/arm-webos-linux-gnueabi_sdk-buildroot-x86_64.tar.gz \
+            | tar xz -C "$HOME/kodi-dev"
+          TC=$(ls -d "$HOME"/kodi-dev/arm-webos-linux-gnueabi_sdk-buildroot*)
+          "$TC/relocate-sdk.sh"
+          echo "TC=$TC" >> "$GITHUB_ENV"
+
+      - name: Dependencies
+        working-directory: tools/depends
+        run: |
+          ./bootstrap
+          ./configure --prefix="$HOME/kodi-deps" --host=arm-webos-linux-gnueabi \
+            --with-toolchain="$TC" --enable-debug=no
+          make -j"$(nproc)" || make
+
+      - name: Kodi
+        run: |
+          make -C tools/depends/target/cmakebuildsys \
+            CMAKE_EXTRA_ARGUMENTS="-DCORE_PLATFORM_NAME=webos -DENABLE_DBUS=OFF -DENABLE_CEC=OFF -DENABLE_PIPEWIRE=OFF -DHAVE_LINUX_UDMABUF=OFF"
+          make -C build -j"$(nproc)"
+          make -C build ipk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kodi-webos-ipk
+          path: build/*.ipk
