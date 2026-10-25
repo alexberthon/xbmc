@@ -26,7 +26,7 @@ jobs:
       - name: Toolchain (buildroot-nc4)
         run: |
           mkdir -p "$HOME/kodi-dev"
-          curl -fL https://github.com/openlgtv/buildroot-nc4/releases/download/2026.08-webos/arm-webos-linux-gnueabi_sdk-buildroot-x86_64.tar.gz \
+          curl -fL https://github.com/openlgtv/buildroot-nc4/releases/download/webos-b17b4cc/arm-webos-linux-gnueabi_sdk-buildroot.tar.gz \
             | tar xz -C "$HOME/kodi-dev"
           TC=$(ls -d "$HOME"/kodi-dev/arm-webos-linux-gnueabi_sdk-buildroot*)
           "$TC/relocate-sdk.sh"
@@ -37,7 +37,7 @@ jobs:
         run: |
           ./bootstrap
           ./configure --prefix="$HOME/kodi-deps" --host=arm-webos-linux-gnueabi \
-            --with-toolchain="$TC" --enable-debug=no
+            --with-toolchain="$TC" --enable-debug=no || { tail -n 80 config.log; exit 1; }
           make -j"$(nproc)" || make
 
       - name: Kodi
