@@ -20,7 +20,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y autoconf automake autopoint autotools-dev bison build-essential \
-            curl default-jre flex gawk gettext gperf libtool lsb-release lzip meson nasm \
+            curl default-jdk flex gawk gettext gperf libcurl4-openssl-dev libtool lsb-release lzip meson nasm \
             ninja-build pkg-config python3 swig unzip uuid-dev xz-utils zip zlib1g-dev
 
       - name: Toolchain (buildroot-nc4)
