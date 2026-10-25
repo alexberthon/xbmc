@@ -74,7 +74,9 @@ bool COSScreenSaverWebOS::OnScreenSaverAboutToStart(LSHandle* sh, LSMessage* rep
 
   CLog::LogF(LOGDEBUG, "Responded {}", msg);
 
-  if (request["state"] != "Active")
+  // Only the about-to-start requests carry a timestamp. Some webOS versions send them without a
+  // state, so a missing state counts as active.
+  if (!request.isMember("timestamp") || (request.isMember("state") && request["state"] != "Active"))
     return true;
 
   CVariant response;
